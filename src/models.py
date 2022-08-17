@@ -48,20 +48,17 @@ class User(db.Model):
     id =db.Column(db.Integer, primary_key=True)
     username =db.Column(db.String(50), nullable=False)
     email =db.Column(db.String(150), nullable=False, unique=True)
-    # tags = db.relationship('Tag', secondary=tags, lazy='subquery',
-    #     backref=db.backref('pages', lazy=True))
     favs_characters_id = db.relationship('Character', secondary=favs_characters, lazy="subquery", backref=db.backref("users", lazy=True))
     favs_planets_id = db.relationship('Planet', secondary=favs_planets, lazy="subquery", backref=db.backref("users", lazy=True))
     favs_vehicles_id = db.relationship('Vehicle', secondary=favs_vehicles, lazy="subquery", backref=db.backref("users", lazy=True))
-    # addresses = db.relationship('Address', backref='person', lazy=True)
     def serialize(self):
         return {
             "id": self.id,
             "username": self.username,
             "email": self.email,
-            # "favs_characters": [character.name for character in self.favs_characters_id.all()],
-            # "favs_planets": [character.name for character in self.favs_planets_id.all()],
-            # "favs_vehicles": [character.name for character in self.favs_vehicles_id.all()]
+            "favs_characters": [character.serialize() for character in self.favs_characters_id] if self.favs_characters_id else [],
+            "favs_planets": [planet.serialize() for planet in self.favs_planets_id] if self.favs_planets_id else [],
+            "favs_vehicles": [vehicle.serialize() for vehicle in self.favs_vehicles_id] if self.favs_planets_id else []
         }
 
 
@@ -131,9 +128,7 @@ class Film(db.Model):
     id =db.Column(db.Integer, primary_key=True)
     name =db.Column(db.String(50), nullable=False)
     episode_id =db.Column(db.Integer, nullable=False)
-    director =db.Column(db.String(50), nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'),
-        nullable=False)
+    director =db.Column(db.String(50))
     characters = db.relationship(
         "Character", secondary=films_characters_table, lazy='subquery', backref=db.backref('films', lazy=True)
     )
